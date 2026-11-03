@@ -68,6 +68,7 @@ public class AdvancementSkillPoints implements ModInitializer {
 
 		// 7. Player lifecycle events: sync & apply on join & respawn
 		ServerPlayerEvents.JOIN.register(player -> {
+			ProgressionService.syncAllCompletedAdvancements(player);
 			ProgressionService.applyAllModifiers(player);
 			ProgressionService.syncToClient(player);
 		});

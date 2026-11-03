@@ -106,4 +106,44 @@ public final class ProgressionService {
 			}
 		}
 	}
+
+	public static int syncAllCompletedAdvancements(ServerPlayer player) {
+		if (player == null || player.level().getServer() == null) return 0;
+		net.minecraft.server.ServerAdvancementManager manager = player.level().getServer().getAdvancements();
+		if (manager == null) return 0;
+
+		if (!AdvancementRewardRegistry.isInitialized()) {
+			AdvancementRewardRegistry.recalculate(manager);
+		}
+
+		net.minecraft.server.PlayerAdvancements playerAdvancements = player.getAdvancements();
+		PlayerProgressionData data = ProgressionAttachments.get(player);
+		int newlyClaimed = 0;
+		int pointsAwarded = 0;
+
+		for (AdvancementHolder holder : manager.getAllAdvancements()) {
+			Identifier id = holder.id();
+			if (!data.hasClaimed(id)) {
+				net.minecraft.advancements.AdvancementProgress progress = playerAdvancements.getOrStartProgress(holder);
+				if (progress != null && progress.isDone()) {
+					int points = AdvancementRewardRegistry.getReward(id);
+					if (data.claimAdvancement(id, points)) {
+						newlyClaimed++;
+						pointsAwarded += points;
+					}
+				}
+			}
+		}
+
+		if (newlyClaimed > 0) {
+			if (pointsAwarded > 0) {
+				player.sendSystemMessage(
+					Component.literal("§6[✦] Retroactively awarded §e" + pointsAwarded + " Skill Points §6for " + newlyClaimed + " completed advancement" + (newlyClaimed > 1 ? "s" : "") + "!"),
+					false
+				);
+			}
+			syncToClient(player);
+		}
+		return pointsAwarded;
+	}
 }

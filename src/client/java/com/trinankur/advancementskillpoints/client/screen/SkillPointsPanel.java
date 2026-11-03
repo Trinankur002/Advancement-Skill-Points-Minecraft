@@ -71,19 +71,24 @@ public final class SkillPointsPanel {
 		int totalEarned = ClientProgressionData.getTotalEarnedPoints();
 		int spentSP = Math.max(0, totalEarned - availSP);
 
-		String availStr = "Available SP: §e" + availSP;
-		String divStr = "§8|";
-		String spentStr = "§7Spent: §f" + spentSP;
+		String fullSummary = "Available SP: §e" + availSP + " §8| §7Spent: §f" + spentSP;
+		int totalSummaryTextW = font.width(fullSummary);
+		int maxSummaryW = summaryW - 8; // Leave 4px padding on both sides to prevent border collision
 
-		int availW = font.width(availStr);
-		int divW = font.width(divStr);
-		int spentW = font.width(spentStr);
-		int totalSummaryTextW = availW + 8 + divW + 8 + spentW;
-		int summaryTextX = summaryX + (summaryW - totalSummaryTextW) / 2;
-
-		graphics.text(font, availStr, summaryTextX, summaryY + 3, 0xFFFFFFFF, true);
-		graphics.text(font, divStr, summaryTextX + availW + 8, summaryY + 3, 0xFF888888, true);
-		graphics.text(font, spentStr, summaryTextX + availW + 8 + divW + 8, summaryY + 3, 0xFFFFFFFF, true);
+		if (totalSummaryTextW > maxSummaryW) {
+			float scale = (float) maxSummaryW / (float) totalSummaryTextW;
+			graphics.pose().pushMatrix();
+			float drawX = summaryX + 4;
+			float drawY = summaryY + (summaryH - (font.lineHeight * scale)) / 2.0f;
+			graphics.pose().translate(drawX, drawY);
+			graphics.pose().scale(scale, scale);
+			graphics.text(font, fullSummary, 0, 0, 0xFFFFFFFF, true);
+			graphics.pose().popMatrix();
+		} else {
+			int summaryTextX = summaryX + (summaryW - totalSummaryTextW) / 2;
+			int summaryTextY = summaryY + (summaryH - font.lineHeight) / 2;
+			graphics.text(font, fullSummary, summaryTextX, summaryTextY, 0xFFFFFFFF, true);
+		}
 
 		// 4. Four Attribute Rows
 		List<AttributeDefinition> attributes = AttributeRegistry.getGuiAttributes();
@@ -148,9 +153,12 @@ public final class SkillPointsPanel {
 			graphics.text(font, "+", btnX + 5, btnY + 3, plusCol, canUpgrade);
 		}
 
-		// 5. Bottom Controls (Creative Mode: Reset + Navigation | Survival: Centered Navigation)
+		// 5. Bottom Controls (Creative Mode: Reset + Centered ATTRIBUTES | Survival: Centered ATTRIBUTES)
 		int bottomY = y + 148;
 		boolean isCreative = mc.player != null && mc.player.isCreative();
+
+		String attrText = "ATTRIBUTES";
+		int attrW = font.width(attrText);
 
 		if (isCreative) {
 			// [ Reset ] button
@@ -163,15 +171,15 @@ public final class SkillPointsPanel {
 			drawButton(graphics, rBtnX, rBtnY, rBtnW, rBtnH, isResetHovered, true);
 			graphics.text(font, "Reset", rBtnX + 5, rBtnY + 3, isResetHovered ? 0xFFFFFF55 : 0xFFFFFFFF, true);
 
-			// ◄  ATTRIBUTES  ► Navigation
-			int navX = x + 44;
-			int navW = 97;
-			drawNavigation(graphics, font, navX, bottomY, navW, 14, mouseX, mouseY);
+			// ATTRIBUTES text centered in the remaining bottom area
+			int rightAreaX = rBtnX + rBtnW + 4;
+			int rightAreaW = (x + PANEL_WIDTH - 6) - rightAreaX;
+			int textX = rightAreaX + (rightAreaW - attrW) / 2;
+			graphics.text(font, attrText, textX, bottomY + 3, 0xFFCCCCCC, true);
 		} else {
-			// Survival / Adventure: Centered Navigation
-			int navX = x + 15;
-			int navW = 117;
-			drawNavigation(graphics, font, navX, bottomY, navW, 14, mouseX, mouseY);
+			// Survival / Adventure: Centered ATTRIBUTES across the panel
+			int textX = x + (PANEL_WIDTH - attrW) / 2;
+			graphics.text(font, attrText, textX, bottomY + 3, 0xFFCCCCCC, true);
 		}
 
 		// 6. Tooltip (Rendered on top if hovering row)
@@ -254,29 +262,6 @@ public final class SkillPointsPanel {
 
 		// Absorb any click inside the panel
 		return isMouseOver(mouseX, mouseY);
-	}
-
-	private static void drawNavigation(
-		GuiGraphicsExtractor graphics,
-		Font font,
-		int navX, int navY, int navW, int navH,
-		int mouseX, int mouseY
-	) {
-		// Left arrow ◄ button (12x14)
-		int leftArrowX = navX;
-		drawButton(graphics, leftArrowX, navY, 12, navH, false, false);
-		graphics.text(font, "§7◄", leftArrowX + 3, navY + 3, 0xFF888888, false);
-
-		// "ATTRIBUTES" centered text
-		String attrText = "ATTRIBUTES";
-		int textW = font.width(attrText);
-		int textX = navX + (navW - textW) / 2;
-		graphics.text(font, attrText, textX, navY + 3, 0xFFCCCCCC, true);
-
-		// Right arrow ► button (12x14)
-		int rightArrowX = navX + navW - 12;
-		drawButton(graphics, rightArrowX, navY, 12, navH, false, false);
-		graphics.text(font, "§7►", rightArrowX + 4, navY + 3, 0xFF888888, false);
 	}
 
 	private static void drawPanelBox(GuiGraphicsExtractor graphics, int x, int y, int w, int h) {

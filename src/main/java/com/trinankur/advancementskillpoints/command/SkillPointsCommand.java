@@ -65,6 +65,31 @@ public final class SkillPointsCommand {
 						})
 					)
 				)
+				// 5. /skillpoints sync [targets]
+				.then(Commands.literal("sync")
+					.executes(ctx -> {
+						ServerPlayer self = ctx.getSource().getPlayerOrException();
+						int points = ProgressionService.syncAllCompletedAdvancements(self);
+						ctx.getSource().sendSuccess(() -> Component.literal(
+							String.format("Synchronized advancements for %s. Awarded %d Skill Points.", self.getName().getString(), points)
+						), true);
+						return 1;
+					})
+					.then(Commands.argument("targets", EntityArgument.players())
+						.executes(ctx -> {
+							Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "targets");
+							int totalPoints = 0;
+							for (ServerPlayer p : players) {
+								totalPoints += ProgressionService.syncAllCompletedAdvancements(p);
+							}
+							int finalTotal = totalPoints;
+							ctx.getSource().sendSuccess(() -> Component.literal(
+								String.format("Synchronized advancements for %d player(s). Awarded %d total Skill Points.", players.size(), finalTotal)
+							), true);
+							return players.size();
+						})
+					)
+				)
 		);
 	}
 
