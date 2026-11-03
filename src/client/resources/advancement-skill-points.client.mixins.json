@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"package": "com.trinankur.advancementskillpoints.client.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"AbstractRecipeBookScreenAccessor",
+		"AbstractRecipeBookScreenMixin",
+		"GuiMixin",
+		"InventoryScreenMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

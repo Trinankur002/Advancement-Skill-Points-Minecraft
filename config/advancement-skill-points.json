@@ -1,0 +1,19 @@
+{
+  "defaultMaxRank": 20,
+  "strengthUnarmedBase": 1.0,
+  "strengthUnarmedPerRank": 0.3,
+  "strengthWeaponMultiplierPerRank": 0.15,
+  "vitalityHealthBase": 20.0,
+  "vitalityHealthPerRank": 3.0,
+  "enduranceReductionPerRank": 0.03,
+  "enduranceMaxReduction": 0.6,
+  "staminaFoodBase": 20,
+  "taskFrameWeight": 1,
+  "goalFrameWeight": 2,
+  "challengeFrameWeight": 4,
+  "moddedBudgetScale": 84.0,
+  "moddedBudgetHalfLife": 100.0,
+  "excludedNamespaces": [],
+  "customRegisteredWeapons": [],
+  "customExcludedWeapons": []
+}

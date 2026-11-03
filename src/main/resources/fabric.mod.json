@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "advancement-skill-points",
+	"version": "${version}",
+	"name": "advancement Skill Points",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/advancement-skill-points/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.trinankur.advancementskillpoints.AdvancementSkillPoints"
+		],
+		"client": [
+			"com.trinankur.advancementskillpoints.client.AdvancementSkillPointsClient"
+		]
+	},
+	"mixins": [
+		"advancement-skill-points.mixins.json",
+		{
+			"config": "advancement-skill-points.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.1.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
