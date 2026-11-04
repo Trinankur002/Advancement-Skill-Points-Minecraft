@@ -11,6 +11,7 @@ public final class ClientProgressionData {
 	private static int availablePoints = 0;
 	private static int totalEarnedPoints = 0;
 	private static final Map<String, Integer> RANKS = new HashMap<>();
+	private static final java.util.Set<String> CLAIMED_ADVANCEMENTS = new java.util.HashSet<>();
 
 	private ClientProgressionData() {}
 
@@ -21,6 +22,15 @@ public final class ClientProgressionData {
 		if (payload.ranks() != null) {
 			RANKS.putAll(payload.ranks());
 		}
+		CLAIMED_ADVANCEMENTS.clear();
+		if (payload.claimedAdvancements() != null) {
+			CLAIMED_ADVANCEMENTS.addAll(payload.claimedAdvancements());
+		}
+	}
+
+	public static boolean isClaimed(Identifier id) {
+		if (id == null) return false;
+		return CLAIMED_ADVANCEMENTS.contains(id.toString()) || CLAIMED_ADVANCEMENTS.contains(id.getPath());
 	}
 
 	public static int getAvailablePoints() {

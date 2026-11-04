@@ -33,6 +33,12 @@ public class AdvancementSkillPointsClient implements ClientModInitializer {
 			});
 		});
 
+		ClientPlayNetworking.registerGlobalReceiver(com.trinankur.advancementskillpoints.network.SyncAdvancementRewardsPayload.TYPE, (payload, context) -> {
+			context.client().execute(() -> {
+				ClientAdvancementRewards.update(payload.rewards());
+			});
+		});
+
 		// Dynamic weapon & tool tooltip damage display based on player's Strength rank
 		ItemTooltipCallback.EVENT.register((stack, context, type, lines) -> {
 			int strengthRank = ClientProgressionData.getRank(ModAttributes.STRENGTH_ID);

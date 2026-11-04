@@ -49,6 +49,13 @@ Invest your earned Skill Points into four attributes directly from your inventor
   - **Oxygen Bar**: Dynamic display (only appears when underwater or holding breath).
   - **XP Bar**: Includes numeric level counter and XP progress.
 
+### 6. Vanilla Advancements Integration (`L`)
+- Retains Minecraft's **100% authentic vanilla Advancements screen** layout and navigation.
+- **Node Reward Badges**: Displays a subtle, clean SP badge on the corner of each advancement node:
+  - **Collected / Completed**: Emerald green badge (`✔ +X`).
+  - **Available / Incomplete**: Gold badge (`✦ +X`).
+- **Native Tooltip Integration**: Hovering over any advancement in the tree shows its description followed by its exact Skill Point reward (`✦ Reward: +X Skill Points`).
+
 ---
 
 ## ❓ Frequently Asked Questions

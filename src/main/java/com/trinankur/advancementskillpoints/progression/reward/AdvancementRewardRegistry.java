@@ -82,6 +82,14 @@ public final class AdvancementRewardRegistry {
 		return REWARD_SNAPSHOT.getOrDefault(id, 0);
 	}
 
+	public static Map<String, Integer> getAllRewardsStringMap() {
+		Map<String, Integer> map = new HashMap<>();
+		for (Map.Entry<Identifier, Integer> entry : REWARD_SNAPSHOT.entrySet()) {
+			map.put(entry.getKey().toString(), entry.getValue());
+		}
+		return map;
+	}
+
 	public static int getTotalVanillaPointsAllocated() {
 		return totalVanillaPointsAllocated;
 	}

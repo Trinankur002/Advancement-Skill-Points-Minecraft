@@ -73,12 +73,13 @@ public final class SkillPointsPanel {
 
 		String fullSummary = "Available SP: §e" + availSP + " §8| §7Spent: §f" + spentSP;
 		int totalSummaryTextW = font.width(fullSummary);
-		int maxSummaryW = summaryW - 8; // Leave 4px padding on both sides to prevent border collision
+		int maxSummaryW = summaryW - 10; // 5px padding on both sides to guarantee zero border collision
 
 		if (totalSummaryTextW > maxSummaryW) {
 			float scale = (float) maxSummaryW / (float) totalSummaryTextW;
+			float scaledW = totalSummaryTextW * scale;
 			graphics.pose().pushMatrix();
-			float drawX = summaryX + 4;
+			float drawX = summaryX + (summaryW - scaledW) / 2.0f;
 			float drawY = summaryY + (summaryH - (font.lineHeight * scale)) / 2.0f;
 			graphics.pose().translate(drawX, drawY);
 			graphics.pose().scale(scale, scale);
@@ -96,7 +97,8 @@ public final class SkillPointsPanel {
 		int rowH = 26;
 		int rowGap = 2;
 
-		AttributeDefinition hoveredDef = null;
+		AttributeDefinition hoveredCardDef = null;
+		AttributeDefinition hoveredBtnDef = null;
 
 		for (int i = 0; i < attributes.size() && i < 4; i++) {
 			AttributeDefinition def = attributes.get(i);
@@ -104,9 +106,19 @@ public final class SkillPointsPanel {
 			int rowX = x + 5;
 			int rowW = 137;
 
+			int btnX = rowX + 118;
+			int btnY = rowY + 5;
+			int btnW = 15;
+			int btnH = 15;
+
+			boolean isBtnHovered = mouseX >= btnX && mouseX < btnX + btnW && mouseY >= btnY && mouseY < btnY + btnH;
 			boolean isRowHovered = mouseX >= rowX && mouseX < rowX + rowW && mouseY >= rowY && mouseY < rowY + rowH;
-			if (isRowHovered) {
-				hoveredDef = def;
+			boolean isCardHovered = isRowHovered && !isBtnHovered;
+
+			if (isBtnHovered) {
+				hoveredBtnDef = def;
+			} else if (isCardHovered) {
+				hoveredCardDef = def;
 			}
 
 			// Row container
@@ -140,14 +152,7 @@ public final class SkillPointsPanel {
 			int costW = font.width(costText);
 			graphics.text(font, costText, rowX + 115 - costW, rowY + 12, 0xFFCCCCCC, true);
 
-			// Upgrade [+] button (15x15)
-			int btnX = rowX + 118;
-			int btnY = rowY + 5;
-			int btnW = 15;
-			int btnH = 15;
-			boolean isBtnHovered = mouseX >= btnX && mouseX < btnX + btnW && mouseY >= btnY && mouseY < btnY + btnH;
 			boolean canUpgrade = ClientProgressionData.canUpgrade(def);
-
 			drawButton(graphics, btnX, btnY, btnW, btnH, isBtnHovered, canUpgrade);
 			int plusCol = canUpgrade ? (isBtnHovered ? 0xFFFFFF55 : 0xFFFFFFFF) : 0xFF777777;
 			graphics.text(font, "+", btnX + 5, btnY + 3, plusCol, canUpgrade);
@@ -182,27 +187,49 @@ public final class SkillPointsPanel {
 			graphics.text(font, attrText, textX, bottomY + 3, 0xFFCCCCCC, true);
 		}
 
-		// 6. Tooltip (Rendered on top if hovering row)
-		if (hoveredDef != null) {
-			int currentRank = ClientProgressionData.getRank(hoveredDef.getId());
-			int nextRank = currentRank + 1;
-			int cost = hoveredDef.getUpgradeCost(currentRank);
-			boolean isMax = currentRank >= hoveredDef.getMaxRank();
+		// 6. Tooltips (Compact, neatly wrapped to avoid covering inventory)
+		if (hoveredBtnDef != null) {
+			int currentRank = ClientProgressionData.getRank(hoveredBtnDef.getId());
+			boolean isMax = currentRank >= hoveredBtnDef.getMaxRank();
+			int cost = hoveredBtnDef.getUpgradeCost(currentRank);
+			boolean canUpgrade = ClientProgressionData.canUpgrade(hoveredBtnDef);
 
-			List<Component> tooltipLines = new ArrayList<>();
-			tooltipLines.add(Component.literal("§6✦ " + hoveredDef.getDisplayName() + " §7(Rank " + currentRank + "/" + hoveredDef.getMaxRank() + ")"));
-			tooltipLines.add(Component.literal("§7" + hoveredDef.getDescription()));
-			tooltipLines.add(Component.literal("§8----------------------"));
-			String curEffect = (currentRank > 0) ? hoveredDef.formatEffect(currentRank) : "None (Base Rank 0)";
-			tooltipLines.add(Component.literal("§aCurrent: §f" + curEffect));
-			if (!isMax) {
-				tooltipLines.add(Component.literal("§eNext (Lv " + nextRank + "): §f" + hoveredDef.formatEffect(nextRank)));
-				tooltipLines.add(Component.literal("§bUpgrade Cost: §e" + cost + " Skill Point" + (cost > 1 ? "s" : "")));
+			List<FormattedCharSequence> btnTooltip = new ArrayList<>();
+			if (isMax) {
+				btnTooltip.add(Component.literal("§6Maximum Rank Reached").getVisualOrderText());
+			} else if (canUpgrade) {
+				btnTooltip.add(Component.literal("§aUpgrade " + hoveredBtnDef.getDisplayName() + " §7(+1)").getVisualOrderText());
+				btnTooltip.add(Component.literal("§7Cost: §e" + cost + " SP").getVisualOrderText());
 			} else {
-				tooltipLines.add(Component.literal("§6MAXIMUM RANK REACHED"));
+				btnTooltip.add(Component.literal("§cCannot Afford Upgrade").getVisualOrderText());
+				btnTooltip.add(Component.literal("§7Requires: §e" + cost + " SP").getVisualOrderText());
+			}
+			graphics.setTooltipForNextFrame(font, btnTooltip, mouseX, mouseY);
+		} else if (hoveredCardDef != null) {
+			int currentRank = ClientProgressionData.getRank(hoveredCardDef.getId());
+			int nextRank = currentRank + 1;
+			int cost = hoveredCardDef.getUpgradeCost(currentRank);
+			boolean isMax = currentRank >= hoveredCardDef.getMaxRank();
+
+			int maxTooltipWidth = 145;
+			List<Component> rawLines = new ArrayList<>();
+			rawLines.add(Component.literal("§6✦ " + hoveredCardDef.getDisplayName() + " §7(Rank " + currentRank + "/" + hoveredCardDef.getMaxRank() + ")"));
+			rawLines.add(Component.literal("§7" + hoveredCardDef.getDescription()));
+
+			String curEffect = (currentRank > 0) ? hoveredCardDef.formatEffect(currentRank) : "Base Rank 0";
+			rawLines.add(Component.literal("§aCurrent: §f" + curEffect));
+
+			if (!isMax) {
+				rawLines.add(Component.literal("§eNext (Lv " + nextRank + "): §f" + hoveredCardDef.formatEffect(nextRank)));
+				rawLines.add(Component.literal("§bUpgrade Cost: §e" + cost + " SP"));
+			} else {
+				rawLines.add(Component.literal("§6[MAXIMUM RANK REACHED]"));
 			}
 
-			List<FormattedCharSequence> formattedTooltip = tooltipLines.stream().map(Component::getVisualOrderText).toList();
+			List<FormattedCharSequence> formattedTooltip = new ArrayList<>();
+			for (Component c : rawLines) {
+				formattedTooltip.addAll(font.split(c, maxTooltipWidth));
+			}
 			graphics.setTooltipForNextFrame(font, formattedTooltip, mouseX, mouseY);
 		}
 	}

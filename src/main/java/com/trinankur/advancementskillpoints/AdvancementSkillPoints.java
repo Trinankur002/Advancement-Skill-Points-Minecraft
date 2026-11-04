@@ -39,6 +39,7 @@ public class AdvancementSkillPoints implements ModInitializer {
 
 		// 4. Register Network Payloads
 		PayloadTypeRegistry.clientboundPlay().register(SyncProgressionPayload.TYPE, SyncProgressionPayload.STREAM_CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(com.trinankur.advancementskillpoints.network.SyncAdvancementRewardsPayload.TYPE, com.trinankur.advancementskillpoints.network.SyncAdvancementRewardsPayload.STREAM_CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(RequestUpgradePayload.TYPE, RequestUpgradePayload.STREAM_CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(RequestResetPayload.TYPE, RequestResetPayload.STREAM_CODEC);
 
@@ -63,11 +64,17 @@ public class AdvancementSkillPoints implements ModInitializer {
 		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resourceManager, success) -> {
 			if (success) {
 				AdvancementRewardRegistry.recalculate(server.getAdvancements());
+				com.trinankur.advancementskillpoints.network.SyncAdvancementRewardsPayload payload =
+					new com.trinankur.advancementskillpoints.network.SyncAdvancementRewardsPayload(AdvancementRewardRegistry.getAllRewardsStringMap());
+				for (net.minecraft.server.level.ServerPlayer p : server.getPlayerList().getPlayers()) {
+					ServerPlayNetworking.send(p, payload);
+				}
 			}
 		});
 
 		// 7. Player lifecycle events: sync & apply on join & respawn
 		ServerPlayerEvents.JOIN.register(player -> {
+			ServerPlayNetworking.send(player, new com.trinankur.advancementskillpoints.network.SyncAdvancementRewardsPayload(AdvancementRewardRegistry.getAllRewardsStringMap()));
 			ProgressionService.syncAllCompletedAdvancements(player);
 			ProgressionService.applyAllModifiers(player);
 			ProgressionService.syncToClient(player);

@@ -25,14 +25,14 @@ public final class ModAttributes {
 		AttributeRegistry.register(new AttributeDefinition(
 			STRENGTH_ID,
 			"Strength",
-			"Improves unarmed damage and scales registered weapons (Swords, Bows, Crossbows, Tridents, Spears).",
+			"Increases unarmed damage and multiplies weapon attack power.",
 			maxRank,
 			0,
 			rank -> rank,
 			rank -> {
 				double unarmed = config.strengthUnarmedBase + (config.strengthUnarmedPerRank * rank);
 				double mult = 1.0 + (config.strengthWeaponMultiplierPerRank * rank);
-				return String.format("Unarmed: %.1f dmg | Weapons: %.2fx (%+d%%)", unarmed, mult, Math.round((mult - 1.0) * 100));
+				return String.format("Unarmed: %.1f | Weapons: %.1fx", unarmed, mult);
 			},
 			true,
 			true,
@@ -43,14 +43,14 @@ public final class ModAttributes {
 		AttributeRegistry.register(new AttributeDefinition(
 			VITALITY_ID,
 			"Vitality",
-			"Increases maximum health up to 80 HP (40 hearts) at Rank 20 without altering potions or buffs.",
+			"Increases player maximum health and knockback resistance.",
 			maxRank,
 			0,
 			rank -> rank,
 			rank -> {
 				int totalHp = (int) Math.round(config.vitalityHealthBase + (config.vitalityHealthPerRank * rank));
 				int bonusHp = (int) Math.round(config.vitalityHealthPerRank * rank);
-				return String.format("+%d HP (Total: %d HP / %.1f Hearts)", bonusHp, totalHp, totalHp / 2.0);
+				return String.format("+%d HP (%d Total / %d Hearts)", bonusHp, totalHp, totalHp / 2);
 			},
 			true,
 			true,
@@ -81,13 +81,13 @@ public final class ModAttributes {
 		AttributeRegistry.register(new AttributeDefinition(
 			ENDURANCE_ID,
 			"Endurance",
-			"Reduces exhaustion accumulation from sprinting, jumping, swimming, and actions up to 60% at Rank 20.",
+			"Reduces hunger exhaustion from sprinting, jumping, and actions.",
 			maxRank,
 			0,
 			rank -> rank,
 			rank -> {
 				double reduction = Math.min(config.enduranceMaxReduction, config.enduranceReductionPerRank * rank);
-				return String.format("-%d%% Exhaustion Accumulation", (int) Math.round(reduction * 100));
+				return String.format("-%d%% Exhaustion", (int) Math.round(reduction * 100));
 			},
 			true,
 			true,
@@ -98,7 +98,7 @@ public final class ModAttributes {
 		AttributeRegistry.register(new AttributeDefinition(
 			STAMINA_ID,
 			"Stamina",
-			"Increases maximum food capacity beyond 20 up to 30 food points and bonus food restoration up to +4 at Rank 20.",
+			"Expands max hunger pool and increases food restoration.",
 			maxRank,
 			0,
 			rank -> rank,
@@ -106,8 +106,7 @@ public final class ModAttributes {
 				int bonusCap = rank / 2;
 				int totalFood = config.staminaFoodBase + bonusCap;
 				int foodRestoreBonus = rank / 5;
-				return String.format("+%d Max Food (%d / %.1f Drumsticks) | +%d Food Restore",
-					bonusCap, totalFood, totalFood / 2.0, foodRestoreBonus);
+				return String.format("+%d Max Food (%d Total) | +%d Restore", bonusCap, totalFood, foodRestoreBonus);
 			},
 			true,
 			true,

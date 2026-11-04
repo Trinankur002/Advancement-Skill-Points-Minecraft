@@ -5,6 +5,7 @@
 	"client": [
 		"AbstractRecipeBookScreenAccessor",
 		"AbstractRecipeBookScreenMixin",
+		"AdvancementWidgetMixin",
 		"GuiMixin",
 		"InventoryScreenMixin"
 	],
